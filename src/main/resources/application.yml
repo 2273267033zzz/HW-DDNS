@@ -1,0 +1,28 @@
+domain:
+  list:
+    #可以配置多个需要解析的域名，以-为分隔符
+    -
+      #aim账户的访问秘钥 可在我的凭证-》访问秘钥菜单里获取
+      ak: xxxxxxxxxxxxxxxxxxxxxxxxxxx
+      sk: xxxxxxxxxxxxxxxxxxxxxxxxxxx
+      #域名id 可在域名列表-》解析-》域名的下拉信息里有域名id
+      zoneId: xxxxxxxxxxxxxxxxxxxxxxxxxxx
+      #记录集id 在具体的解析记录下拉里可见
+      recordsetId: xxxxxxxxxxxxxxxxxxxxxxxxxxx
+      #主机类型 A：ipv4 AAAA:ipv6
+      type: A
+      #域名
+      domainName: ipv4.example.com
+    #如果需要解析多个请去除#
+    #-
+      #aim账户的访问秘钥 可在我的凭证-》访问秘钥菜单里获取
+      #ak: xxxxxxxxxxxxxxxxxxxxxxxxxxx
+      #sk: xxxxxxxxxxxxxxxxxxxxxxxxxxx
+      #域名id 可在域名列表-》解析-》域名的下拉信息里有域名id
+      #zoneId: xxxxxxxxxxxxxxxxxxxxxxxxxxx
+      #记录集id 在具体的解析记录下拉里可见
+      #recordsetId: xxxxxxxxxxxxxxxxxxxxxxxxxxx
+      #主机类型:   A(ipv4)/AAAA(ipv6)
+      #type: AAAA
+      #域名
+      #domainName: ipv6.example.com
