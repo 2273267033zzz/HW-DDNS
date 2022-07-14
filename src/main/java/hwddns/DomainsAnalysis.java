@@ -49,6 +49,8 @@ public class DomainsAnalysis {
      */
     @Scheduled(cron = "0 0/10 * * * ?")
     public void DDNS() throws IOException {
+        log.info("\n\n");
+        log.info("=================================================================");
         log.info("进入DDNS");
         //获取ip地址
         String newV4Ip = getIp(IPV4TYPE);
@@ -70,8 +72,9 @@ public class DomainsAnalysis {
             boolean ipPattern = domain.getType().equals(IPV4TYPE) ? ipv4Pattern : ipv6Pattern;
             String newIp = domain.getType().equals(IPV4TYPE) ? newV4Ip : newV6Ip;
             String ip = domain.getType().equals(IPV4TYPE) ? v4Ip : v6Ip;
+
             if (ipPattern && StringUtils.isNotBlank(newIp) && !ip.equals(newIp)) {
-                log.info("开始调用dns接口");
+                log.info("新旧ip不一致，开始调用dns接口");
                 ip = newIp;
                 String ak = domain.getAk();
                 String sk = domain.getSk();
@@ -103,8 +106,11 @@ public class DomainsAnalysis {
                     log.info("{}", e.getErrorCode());
                     log.info("{}", e.getErrorMsg());
                 }
-                v4Ip = newV4Ip;
-                v6Ip = newV6Ip;
+                if (domain.getType().equals(IPV4TYPE)) {
+                    v4Ip = newV4Ip;
+                } else {
+                    v6Ip = newV6Ip;
+                }
             }
         }
     }
@@ -140,7 +146,6 @@ public class DomainsAnalysis {
             CloseableHttpResponse response = client.execute(httpGet);
             HttpEntity entity = response.getEntity();
             result = EntityUtils.toString(entity, "UTF-8");
-            log.info("接口返回:{}", result);
             result = StringUtils.trim(result);
             response.close();
             client.close();
