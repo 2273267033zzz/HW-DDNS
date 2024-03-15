@@ -10,6 +10,7 @@
 编辑shell脚本:
 
 #!/bin/sh
+
 nohup java -jar hwddns.jar --spring.config.location=application.yml  >> hw-ddns.log &
 echo $! > ${execPath}/tpid
 echo "hwddns已启动"
