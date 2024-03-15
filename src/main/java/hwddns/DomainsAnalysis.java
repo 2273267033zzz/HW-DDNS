@@ -1,5 +1,6 @@
 package hwddns;
 
+import com.alibaba.fastjson.JSONObject;
 import com.huaweicloud.sdk.core.auth.BasicCredentials;
 import com.huaweicloud.sdk.core.auth.ICredential;
 import com.huaweicloud.sdk.core.exception.ConnectionException;
@@ -44,32 +45,43 @@ public class DomainsAnalysis {
      * @param
      * @return void
      * @Author zzz
-     * @Description //TODO 定时任务 600秒查询一次当前公网ip,对比旧的公网ip和dns里的ip,如果不同就更新解析记录
+     * @Description //TODO 定时任务 600000毫秒查询一次当前公网ip,对比旧的公网ip和dns里的ip,如果不同就更新解析记录
      * @Date 15:17 2021/3/18
      */
-    @Scheduled(cron = "0 0/10 * * * ?")
+//    @Scheduled(cron = "0 0/10 * * * ?")
+    @Scheduled(fixedDelay = 600000)
     public void DDNS() throws IOException {
         log.info("进入DDNS");
-        //获取ip地址
-        String newV4Ip = getIp(IPV4TYPE);
-        Boolean ipv4Pattern = matchIp(IPV4TYPE, newV4Ip);
-        log.info("newV4Ip:{}", newV4Ip);
-        log.info("ipv4Pattern:{}", ipv4Pattern);
-        log.info("原v4ip:{}", v4Ip);
 
-        String newV6Ip = getIp(IPV6TYPE);
-        Boolean ipv6Pattern = matchIp(IPV6TYPE, newV6Ip);
-        log.info("newV6Ip:{}", newV6Ip);
-        log.info("ipv6Pattern:{}", ipv6Pattern);
-        log.info("原v6ip:{}", v6Ip);
         List<Domain> domainList = configBean.getList();
-        log.info("获取配置文件域名：{}", domainList);
+        log.info("获取配置文件域名：{}", JSONObject.toJSONString(domainList));
+
+        //获取ip地址
+        String newV4Ip = null;
+        String newV6Ip = null;
+
 
         for (Domain domain : domainList) {
-            log.info("循环解析域名当前域名:{}", domain);
-            boolean ipPattern = domain.getType().equals(IPV4TYPE) ? ipv4Pattern : ipv6Pattern;
+            log.info("循环解析域名当前域名:{}", JSONObject.toJSONString(domain));
             String newIp = domain.getType().equals(IPV4TYPE) ? newV4Ip : newV6Ip;
             String ip = domain.getType().equals(IPV4TYPE) ? v4Ip : v6Ip;
+
+            if (StringUtils.isBlank(newIp)) {
+                if (domain.getType().equals(IPV4TYPE)) {
+                    newV4Ip = getIp(IPV4TYPE);
+                    newIp = newV4Ip;
+                } else if (domain.getType().equals(IPV6TYPE)) {
+                    newV6Ip = getIp(IPV6TYPE);
+                    newIp = newV6Ip;
+                }
+            }
+            boolean ipPattern = matchIp(domain.getType(), newIp);
+
+            log.info("域名:{}", domain.getDomainName());
+            log.info("newIp:{}", newIp);
+            log.info("原ip:{}", ip);
+            log.info("ipPattern:{}", ipPattern);
+
             if (ipPattern && StringUtils.isNotBlank(newIp) && !ip.equals(newIp)) {
                 log.info("开始调用dns接口");
                 ip = newIp;
@@ -94,26 +106,33 @@ public class DomainsAnalysis {
                 request.withBody(body);
                 try {
                     UpdateRecordSetResponse response = client.updateRecordSet(request);
-                    log.info(response.toString());
+                    log.info("接口返回：{}",response.toString());
                 } catch (ConnectionException | RequestTimeoutException e) {
-                    log.info("{}", e.getMessage());
+                    log.error("{}", e.getMessage());
                 } catch (ServiceResponseException e) {
                     e.printStackTrace();
-                    log.info("{}", e.getHttpStatusCode());
-                    log.info("{}", e.getErrorCode());
-                    log.info("{}", e.getErrorMsg());
+                    log.error("{}", e.getHttpStatusCode());
+                    log.error("{}", e.getHttpStatusCode());
+                    log.error("{}", e.getErrorCode());
+                    log.error("{}", e.getErrorMsg());
                 }
-                v4Ip = newV4Ip;
-                v6Ip = newV6Ip;
             }
         }
+
+        //修改ip
+        v4Ip = newV4Ip;
+        v6Ip = newV6Ip;
     }
 
     public static String getIp(String type) {
         //默认ipv4
         if ("A".equals(type)) {
-            String url = "http://www.3322.org/dyndns/getip";
+            String url = "https://4.ipw.cn";
             String result = sendRequest(url);
+            if (StringUtils.isBlank(result)) {
+                url = "http://www.3322.org/dyndns/getip";
+                result = sendRequest(url);
+            }
             if (StringUtils.isBlank(result)) {
                 url = "http://www.net.cn/static/customercare/yourip.asp";
                 result = sendRequest(url);
@@ -126,7 +145,7 @@ public class DomainsAnalysis {
             }
             return result;
         } else {//如果是主机类型为AAAA 获取ipv6地址
-            String url = "http://v6.meibu.com/ips.asp";
+            String url = "https://6.ipw.cn";
             return sendRequest(url);
         }
 
@@ -140,12 +159,11 @@ public class DomainsAnalysis {
             CloseableHttpResponse response = client.execute(httpGet);
             HttpEntity entity = response.getEntity();
             result = EntityUtils.toString(entity, "UTF-8");
-            log.info("接口返回:{}", result);
             result = StringUtils.trim(result);
             response.close();
             client.close();
         } catch (IOException e) {
-            log.info("接口异常");
+            log.error("接口异常");
         }
         return result;
     }
