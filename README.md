@@ -12,13 +12,19 @@
 
 docker build -t hwddns .
 
-#运行容器
+#如果你使用我提供的docker镜像,需要你自己导入镜像
+
+#docker load < hwddns.tar
+
+#创建并运行容器
 
 docker run --name hwddns --restart=always -d hwddns
 
 #如果需要挂载yaml文件
 
 #docker run --name hwddns --restart=always -v /你自己存放yaml的目录:/opt/hwddns/yaml -d hwddns
+
+
 
 二、手动编译jar包，将jar包上传到服务器并运行
 
