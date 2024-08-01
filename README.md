@@ -13,7 +13,7 @@
 docker build -t hwddns .
 
 #如果你使用我提供的docker镜像,需要你自己导入镜像
-
+#unzip hwddns.zip
 #docker load < hwddns.tar
 
 #创建并运行容器
