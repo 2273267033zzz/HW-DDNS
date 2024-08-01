@@ -1,9 +1,3 @@
-#打包镜像
-#docker build -t hwddns .
-#运行容器
-#docker run --name hwddns --restart=always -d hwddns
-#如果需要挂载yaml文件
-#docker run --name hwddns --restart=always -v /你自己存放yaml的目录:/opt/hwddns/yaml -d hwddns
 
 FROM openjdk:8-jdk-alpine
 
